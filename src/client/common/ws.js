@@ -5,6 +5,7 @@
 import generate from './uid'
 import wait from './wait'
 import copy from 'json-deep-copy'
+import { pick } from 'lodash-es'
 
 const onces = {}
 const wss = {}
@@ -151,7 +152,13 @@ export default (type, id, sessionId = '', sftpId = '', persist) => {
         id,
         sessionId,
         sftpId,
-        window._config
+        pick(window.store.config, [
+          'host',
+          'port',
+          'tokenElecterm',
+          'server',
+          'urlPath'
+        ])
       ]
     })
     onces[id] = {

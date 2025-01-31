@@ -2,25 +2,16 @@
  * transfer history related functions
  */
 
-import {
-  maxTransferHistory
-} from '../common/constants'
-
-export default store => {
-  store.clearTransferHistory = () => {
-    store.transferHistory = []
+export default Store => {
+  Store.prototype.clearTransferHistory = function () {
+    window.store.transferHistory = []
   }
 
-  store.getTransferHistory = () => {
-    return store.getItems('transferHistory')
+  Store.prototype.getTransferHistory = function () {
+    return window.store.transferHistory
   }
 
-  store.addTransferHistory = (item) => {
-    const transferHistory = store.getItems('transferHistory')
-    transferHistory.unshift(item)
-    store.setItems(
-      'transferHistory',
-      transferHistory.slice(0, maxTransferHistory)
-    )
+  Store.prototype.addTransferHistory = function (item) {
+    window.store.transferHistory.unshift(item)
   }
 }

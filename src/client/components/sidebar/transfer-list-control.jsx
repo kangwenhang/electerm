@@ -7,15 +7,11 @@ import {
   PlayCircleOutlined,
   PauseCircleOutlined
 } from '@ant-design/icons'
-import _ from 'lodash'
-import {
-  transportTypes
-} from '../sftp/transport-types'
+import { get } from 'lodash-es'
 
 const { Option } = Select
 
-const { prefix } = window
-const e = prefix('sftp')
+const e = window.translate
 
 export default class TransferModalUI extends Component {
   state = {
@@ -26,22 +22,17 @@ export default class TransferModalUI extends Component {
     return this.getTransferList().filter(t => t.inited)
   }
 
-  pauseOrResumeAll = () => {
-    window.postMessage({
-      action: transportTypes.pauseOrResumeAll,
-      id: this.state.filter
-    }, '*')
+  handlePauseOrResumeAll = () => {
+    const { store } = window
+    store.pauseAllTransfer ? store.resumeAll() : store.pauseAll()
   }
 
-  cancelAll = () => {
-    window.postMessage({
-      action: transportTypes.cancelAll,
-      id: this.state.filter
-    }, '*')
+  handleCancelAll = () => {
+    window.store.cancelAll()
   }
 
   getGroups = () => {
-    const fileTransfers = this.props.store.getItems('fileTransfers')
+    const { fileTransfers } = this.props
     const tree = fileTransfers.reduce((p, k) => {
       const {
         id,
@@ -78,7 +69,7 @@ export default class TransferModalUI extends Component {
     const {
       filter
     } = this.state
-    const fileTransfers = this.props.store.getItems('fileTransfers')
+    const fileTransfers = this.props.fileTransfers
     return filter === 'all'
       ? fileTransfers
       : fileTransfers.filter(d => d.sessionId === filter)
@@ -86,7 +77,7 @@ export default class TransferModalUI extends Component {
 
   computePercent = () => {
     const { all, transfered } = this.getTransferList().reduce((prev, c) => {
-      prev.all += _.get(c, 'fromFile.size') || 0
+      prev.all += c?.fromFile?.size || 0
       prev.transfered += (c.transferred || 0)
       return prev
     }, {
@@ -102,7 +93,7 @@ export default class TransferModalUI extends Component {
 
   computeLeftTime = () => {
     const sorted = this.getCurrentTransports().sort((b, a) => a.leftTimeInt - b.leftTimeInt)
-    return _.get(sorted, '[0].leftTime') || '-'
+    return get(sorted, '[0].leftTime') || '-'
   }
 
   computePausing = () => {
@@ -126,6 +117,7 @@ export default class TransferModalUI extends Component {
             return (
               <Transport
                 transfer={t}
+                index={i}
                 key={id + ':tr:' + i}
               />
             )
@@ -149,7 +141,7 @@ export default class TransferModalUI extends Component {
         <Select
           value={this.state.filter}
           onChange={this.handleFilter}
-          dropdownMatchSelectWidth={false}
+          popupMatchSelectWidth={false}
         >
           {
             all.map(item => {
@@ -182,7 +174,7 @@ export default class TransferModalUI extends Component {
           <div className='fright'>
             <span
               className='pointer'
-              onClick={this.pauseOrResumeAll}
+              onClick={this.handlePauseOrResumeAll}
             >
               {this.renderTransportIcon()} {this.computePercent()}%({this.computeLeftTime()})
               <span className='mg1x'>
@@ -191,7 +183,7 @@ export default class TransferModalUI extends Component {
             </span>
             <span
               className='color-red pointer'
-              onClick={this.cancelAll}
+              onClick={this.handleCancelAll}
             >
               {e('cancelAll')}
             </span>

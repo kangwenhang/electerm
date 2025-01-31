@@ -1,58 +1,45 @@
 /**
- * history select
+ * bookmark select
  */
 
-import { Component } from '../common/react-subx'
-import TreeList from '../setting-panel/tree-list'
-import {
-  sshConfigItems
-} from '../../common/constants'
+import { auto } from 'manate/react'
+import TreeList from '../tree-list/tree-list'
 
-export default class BookmarkSelect extends Component {
-  render () {
-    const { store, from } = this.props
-    const {
-      listStyle,
-      openedSideBar,
-      openedCategoryIds
-    } = store
-    if (from === 'sidebar' && openedSideBar !== 'bookmarks') {
-      return null
-    }
-    const onClickItem = (item) => {
-      if (!store.pinned) {
-        store.storeAssign({
-          openedSideBar: ''
-        })
-      }
-      store.onSelectBookmark(item.id)
-    }
-    const base = {
-      store,
-      bookmarks: [
-        ...(store.getItems('bookmarks') || []),
-        ...sshConfigItems
-      ],
-      type: 'bookmarks',
-      onClickItem,
-      listStyle,
-      staticList: true
-    }
-    const propsTree = {
-      ...base,
-      shouldConfirmDel: true,
-      bookmarkGroups: store.getBookmarkGroupsTotal(),
-      expandedKeys: openedCategoryIds,
-      onExpand: openedCategoryIds => {
-        store.storeAssign({
-          openedCategoryIds
-        })
-      }
-    }
-    return (
-      <TreeList
-        {...propsTree}
-      />
-    )
+export default auto(function BookmarkSelect (props) {
+  const { store, from } = props
+  const {
+    listStyle,
+    openedSideBar,
+    leftSidebarWidth,
+    expandedKeys
+  } = store
+  if (from === 'sidebar' && openedSideBar !== 'bookmarks') {
+    return null
   }
-}
+  const onClickItem = (item) => {
+    if (!store.pinned) {
+      store.setOpenedSideBar('')
+    }
+    store.onSelectBookmark(item.id)
+  }
+  const base = {
+    bookmarks: store.bookmarks || [],
+    type: 'bookmarks',
+    onClickItem,
+    listStyle,
+    staticList: true
+  }
+  const propsTree = {
+    ...base,
+    shouldConfirmDel: true,
+    bookmarkGroups: store.getBookmarkGroupsTotal(),
+    expandedKeys,
+    leftSidebarWidth,
+    bookmarkGroupTree: store.bookmarkGroupTree
+  }
+  return (
+    <TreeList
+      {...propsTree}
+    />
+  )
+})

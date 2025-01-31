@@ -2,69 +2,39 @@
  * extend store
  */
 
-import keyControlPress from '../common/key-control-pressed'
-import keyPressed from '../common/key-pressed'
+import { refs } from '../components/common/ref'
 
-export default store => {
-  Object.assign(store, {
-    initShortcuts () {
-      window.addEventListener('keydown', e => {
-        if (keyControlPress(e) && keyPressed(e, 'w')) {
-          e.stopPropagation()
-          store.delTab({
-            id: store.currentTabId
-          })
-          if (!store.tabs.length) {
-            store.addTab()
-          }
-        }
-      })
-    },
+export default Store => {
+  Store.prototype.focus = function () {
+    window.focused = true
+    refs.get('term-' + window.store.activeTabId)?.term?.focus()
+  }
 
-    initStoreEvents () {
-      window.addEventListener('message', store.onStoreEvent)
-    },
+  Store.prototype.blur = function () {
+    window.focused = false
+    window.pre.runSync('windowMove', false)
+    refs.get('term-' + window.store.activeTabId)?.term?.blur()
+  }
 
-    onStoreEvent (e) {
-      const {
-        type
-      } = e.data || {}
-      if (type !== 'store-op') {
-        return false
-      }
-      const {
-        action,
-        args
-      } = e.data || {}
-      return store[action](...args)
-    },
+  Store.prototype.onBlur = function () {
+    window.focused = false
+    window.pre.runSync('windowMove', false)
+  }
 
-    focus () {
-      if (store.showModal) {
-        return false
-      }
-      window.postMessage({
-        type: 'focus'
-      }, '*')
-    },
+  Store.prototype.selectall = function () {
+    document.activeElement &&
+    document.activeElement.select &&
+    document.activeElement.select()
+    refs.get('term-' + window.store.activeTabId)?.term?.selectAll()
+  }
 
-    selectall () {
-      document.activeElement &&
-      document.activeElement.select &&
-      document.activeElement.select()
-      window.postMessage({
-        event: 'selectall',
-        id: store.activeTerminalId
-      }, '*')
-    },
+  Store.prototype.triggerResize = function () {
+    window.store.resizeTrigger = window.store.resizeTrigger ? 0 : 1
+    window.dispatchEvent(new Event('resize'))
+  }
 
-    triggerReszie () {
-      window.dispatchEvent(new window.Event('resize'))
-    },
-
-    toggleTermFullscreen (terminalFullScreen) {
-      store.terminalFullScreen = terminalFullScreen
-      setTimeout(store.triggerReszie, 500)
-    }
-  })
+  Store.prototype.toggleTermFullscreen = function (terminalFullScreen) {
+    window.store.terminalFullScreen = terminalFullScreen
+    setTimeout(window.store.triggerResize, 500)
+  }
 }

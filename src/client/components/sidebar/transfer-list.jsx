@@ -1,4 +1,4 @@
-import { Component } from '../common/react-subx'
+import { memo } from 'react'
 import {
   SwapOutlined
 } from '@ant-design/icons'
@@ -9,45 +9,51 @@ import {
 import TransferModal from './transfer-modal'
 import './transfer.styl'
 
-const { prefix } = window
-const e = prefix('sftp')
+const e = window.translate
 
-export default class TransferList extends Component {
-  render () {
-    const { store } = this.props
-    const {
-      openTransferList,
-      fileTransfers,
-      transferHistory
-    } = store
-    if (!fileTransfers.length && !transferHistory.length) {
-      return null
-    }
-    return (
-      <div
-        className='control-icon-wrap'
-        title={e('fileTransfers')}
-      >
-        <Popover
-          placement='right'
-          destroyTooltipOnHide
-          overlayClassName='transfer-list-card'
-          content={<TransferModal store={store} />}
-        >
-          <Badge
-            count={fileTransfers.length}
-            size='small'
-            offset={[-10, -5]}
-            color='green'
-            overflowCount={99}
-          >
-            <SwapOutlined
-              className='iblock font20 control-icon'
-              onClick={openTransferList}
-            />
-          </Badge>
-        </Popover>
-      </div>
-    )
+export default memo(function TransferList (props) {
+  const {
+    fileTransfers,
+    transferTab,
+    transferHistory
+  } = props
+  const len = fileTransfers.length
+  if (!len && !transferHistory.length) {
+    return null
   }
-}
+  const color = fileTransfers.some(item => item.error) ? 'red' : 'green'
+  const bdProps = {
+    className: len ? 'hvr-bob hvr-bob-fast' : '',
+    count: len,
+    size: 'small',
+    offset: [-10, -5],
+    color,
+    overflowCount: 99
+  }
+  const transferModalProps = {
+    fileTransfers,
+    transferHistory,
+    transferTab
+  }
+  return (
+    <div
+      className='control-icon-wrap'
+      title={e('fileTransfers')}
+    >
+      <Popover
+        placement='right'
+        destroyTooltipOnHide
+        overlayClassName='transfer-list-card'
+        content={<TransferModal {...transferModalProps} />}
+      >
+        <Badge
+          {...bdProps}
+        >
+          <SwapOutlined
+            className='iblock font20 control-icon'
+          />
+        </Badge>
+      </Popover>
+    </div>
+  )
+})

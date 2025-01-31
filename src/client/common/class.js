@@ -1,7 +1,4 @@
-
 // dom class方法
-import _ from 'lodash'
-
 /**
  * add css class
  * @param elem
@@ -26,7 +23,7 @@ export function addClass (elem, ..._classes) {
  */
 export function hasClass (elem, clst) {
   let cls = elem.className || ''
-  if (!cls || !_.isString(cls)) {
+  if (!cls || typeof cls !== 'string') {
     return false
   }
   cls = ' ' + cls.split(/\s+/).join(' ') + ' '
@@ -41,7 +38,7 @@ export function hasClass (elem, clst) {
  */
 export function removeClass (elem, ...classes) {
   let cls = elem.className || ''
-  if (!cls || !_.isString(cls)) {
+  if (!cls || typeof cls !== 'string') {
     return
   }
   cls = '  ' + cls.split(/\s+/).join('  ') + '  '
